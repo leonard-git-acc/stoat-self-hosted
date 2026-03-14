@@ -77,22 +77,6 @@ echo "Configuring Stoat with hostname $DOMAIN"
 
 STOAT_HOSTNAME="https://$DOMAIN"
 
-read -rp "Would you like to place Stoat behind another reverse proxy? [y/N]: "
-if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
-    echo "Yes received. Configuring for reverse proxy."
-    STOAT_HOSTNAME=':80'
-    echo "Writing compose.override.yml..."
-    echo "services:" > compose.override.yml
-    echo "  caddy:" >> compose.override.yml
-    echo "    ports: !override" >> compose.override.yml
-    echo "     - \"8880:80\"" >> compose.override.yml
-    echo "caddy is configured to host on :8880. If you need a different port, modify the compose.override.yml."
-    echo "STOAT_DOMAIN=" > .env
-else
-    echo "No received. Configuring with built in caddy as primary reverse proxy."
-    echo "STOAT_DOMAIN=$DOMAIN" > .env
-fi
-
 read -rp "Would you like to enable camera and screen sharing? [Y/n]: "
 if [ "$REPLY" = "n" ] || [ "$REPLY" = "N" ]; then
     echo "No received. Not configuring video."
@@ -239,3 +223,8 @@ fi
 if [[ $IS_OVERWRITING -eq 1 ]]; then
     echo "Overwrote existing config. If any custom configuration was present in old Revolt.toml, you may now copy it over from Revolt.toml.old."
 fi
+
+# overrides for certbot domain
+echo "services:" > compose.override.yml
+    echo "  certbot:" >> compose.override.yml
+    echo "    command: certonly --standalone -w /var/www/certbot -d $DOMAIN --agree-tos >> compose.override.yml
