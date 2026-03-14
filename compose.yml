@@ -238,37 +238,60 @@ services:
     networks:
       - stoat_network
     ports:
-      - "80:80"
       - "443:443"
     volumes:
       - ./configs/nginx.conf:/etc/nginx/conf.d/stoat.conf:ro
       - ./certs:/etc/letsencrypt/:ro
-      - ./www:/var/www/certbot
+    restart: always
     depends_on:
       - api
       - events
       - autumn
       - january
       - gifbox
+      - livekit
       - web
+      - certbot
 
+  nginx-cron:
+    image: docker:stable
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: >
+      sh -c '
+        apk add --no-cache bash
+        echo "0 3 * * 0 docker exec nginx nginx -s reload" > /etc/crontabs/root
+        crond -f -d 8
+      '
+    depends_on:
+      - nginx
+
+  # certbot initial + renew
   certbot:
     image: certbot/certbot
     container_name: certbot
+    ports:
+      - "80:80"
     volumes:
       - ./certs:/etc/letsencrypt
-      - ./www:/var/www/certbot
+    restart: always
+    env_file: domain.env
     entrypoint: >
-      sh -c "
+      sh -c '
+        set -e
+
+        if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
+          echo "No certificate found for $DOMAIN. Requesting initial certificate..."
+          certbot certonly --standalone -d $DOMAIN --agree-tos --no-eff-email
+        else
+          echo "Certificate already exists for $DOMAIN. Skipping initial request."
+        fi
+
         trap exit TERM;
+
         while :; do
-          certbot renew --webroot -w /var/www/certbot --quiet;
-          sleep 12h;
+          echo "Running certbot renew..."
+          certbot renew --standalone --quiet
+          sleep 12h
         done
-      "
-  
-  # docker compose run --rm certbot certonly \
-  # --webroot \
-  # -w /var/www/certbot \
-  # -d yourdomain.com \
-  # --agree-tos
+      '

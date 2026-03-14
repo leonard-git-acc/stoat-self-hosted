@@ -224,10 +224,6 @@ if [[ $IS_OVERWRITING -eq 1 ]]; then
     echo "Overwrote existing config. If any custom configuration was present in old Revolt.toml, you may now copy it over from Revolt.toml.old."
 fi
 
-# replace domain in nginx conf
+# replace domain in nginx conf and certbot
 sed "s/\${DOMAIN}/$DOMAIN/g" "./configs/nginx.conf.tmplt" > "./configs/nginx.conf"
-
-# overrides for certbot domain
-echo "services:" > compose.override.yml
-    echo "  certbot:" >> compose.override.yml
-    echo "    command: certonly --standalone -w /var/www/certbot -d $DOMAIN --agree-tos >> compose.override.yml
+echo "DOMAIN=$DOMAIN" > "domain.env"
