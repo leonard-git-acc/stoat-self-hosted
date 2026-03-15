@@ -226,7 +226,7 @@ services:
 
   # Web App
   web:
-    image: ghcr.io/stoatchat/for-web:103d2bf
+    image: ghcr.io/stoatchat/for-web:cfdbcd3
     networks:
       - stoat_network
     restart: always

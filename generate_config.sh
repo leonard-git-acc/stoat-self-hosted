@@ -227,3 +227,10 @@ fi
 # replace domain in nginx conf and certbot
 sed "s/\${DOMAIN}/$DOMAIN/g" "./configs/nginx.conf.tmplt" > "./configs/nginx.conf"
 echo "DOMAIN=$DOMAIN" > "domain.env"
+
+# Invite only
+echo "" >> Revolt.toml
+echo "[api.registration]" >> Revolt.toml
+echo "invite_only = true" >> Revolt.toml
+# Whether an invite should be required for registration
+# See https://github.com/stoatchat/self-hosted#making-your-instance-invite-only
