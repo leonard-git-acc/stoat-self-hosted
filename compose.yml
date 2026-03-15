@@ -226,7 +226,7 @@ services:
 
   # Web App
   web:
-    image: ghcr.io/stoatchat/for-web:cfdbcd3
+    image: stoat-for-web/nornn
     networks:
       - stoat_network
     restart: always
@@ -280,11 +280,11 @@ services:
       sh -c '
         set -e
 
-        if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-          echo "No certificate found for $DOMAIN. Requesting initial certificate..."
-          certbot certonly --standalone -d $DOMAIN --agree-tos --no-eff-email
+        if [ ! -d "/etc/letsencrypt/live/$$DOMAIN" ]; then
+          echo "No certificate found for $$DOMAIN. Requesting initial certificate..."
+          certbot certonly --standalone -d $$DOMAIN --agree-tos --no-eff-email
         else
-          echo "Certificate already exists for $DOMAIN. Skipping initial request."
+          echo "Certificate already exists for $$DOMAIN. Skipping initial request."
         fi
 
         trap exit TERM;
